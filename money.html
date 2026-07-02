@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For You, On Your Day</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --wine: #5e1326;
+      --wine-deep: #3c0a17;
+      --gold: #c9974c;
+      --gold-soft: #e7c98a;
+      --cream: #f7ecd9;
+      --parchment: #fbf4e6;
+      --ink: #2b1410;
+      --shadow: rgba(30, 5, 10, .45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      background: var(--wine-deep);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 22px 100px;
+    }
+
+    .scene {
+      display: none;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .scene.active {
+      display: block;
+      animation: rise .9s cubic-bezier(.2, .8, .2, 1) forwards;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(26px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .eyebrow {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      font-size: .72rem;
+      color: var(--gold-soft);
+    }
+
+    /* ---------------- texture backdrops ---------------- */
+    .bg-wine {
+      background:
+        radial-gradient(circle at 20% 15%, rgba(201, 151, 76, .10), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(201, 151, 76, .08), transparent 50%),
+        linear-gradient(165deg, var(--wine-deep), var(--wine) 60%, #4a0f1f);
+    }
+
+    .bg-parchment {
+      background:
+        radial-gradient(circle at 15% 20%, rgba(94, 19, 38, .06), transparent 40%),
+        linear-gradient(170deg, var(--parchment), #f1e3c9 80%);
+    }
+
+    .bg-night {
+      background: radial-gradient(circle at 50% 30%, #2a1b3d, #160b22 70%);
+      transition: background 1.4s ease;
+    }
+
+    .bg-night.lit {
+      background: radial-gradient(circle at 50% 35%, #5b3a78, #2a1530 75%);
+    }
+
+    .bg-rose {
+      background: linear-gradient(165deg, #7a1830, #5e1326 55%, #3c0a17);
+    }
+
+    /* ============ SCENE 1 — WAX SEAL ENVELOPE ============ */
+    .envelope-wrap {
+      perspective: 1200px;
+      margin: 0 auto 30px;
+      width: 280px;
+      height: 190px;
+      position: relative;
+    }
+
+    .envelope {
+      position: relative;
+      width: 280px;
+      height: 190px;
+      background: linear-gradient(160deg, var(--cream), #efdfc0);
+      border-radius: 4px;
+      box-shadow: 0 30px 60px var(--shadow);
+    }
+
+    .flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 95px;
+      background: linear-gradient(160deg, #f1e3c9, var(--gold-soft));
+      clip-path: polygon(0 0, 100% 0, 50% 92%);
+      transform-origin: top center;
+      transition: transform .9s cubic-bezier(.65, 0, .35, 1);
+      z-index: 3;
+    }
+
+    .envelope.open .flap {
+      transform: rotateX(180deg);
+    }
+
+    .seal {
+      position: absolute;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #9a2c3f, var(--wine) 70%);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, .4), inset 0 -3px 6px rgba(0, 0, 0, .3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-soft);
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      z-index: 4;
+      cursor: pointer;
+      transition: transform .5s ease, opacity .5s ease;
+    }
+
+    .envelope.open .seal {
+      opacity: 0;
+      transform: translateX(-50%) scale(.4) rotate(20deg);
+      pointer-events: none;
+    }
+
+    .letter-peek {
+      position: absolute;
+      bottom: 8px;
+      left: 14px;
+      right: 14px;
+      height: 130px;
+      background: var(--parchment);
+      border-radius: 3px;
+      box-shadow: 0 -4px 14px rgba(0, 0, 0, .12);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      transform: translateY(14px);
+      transition: transform .9s cubic-bezier(.2, .8, .2, 1) .25s;
+    }
+
+    .envelope.open .letter-peek {
+      transform: translateY(-46px);
+    }
+
+    h1.headline {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 1.65rem;
+      color: var(--wine);
+      line-height: 1.3;
+    }
+
+    h1.headline em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .tap-hint {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: var(--gold-soft);
+      font-size: .85rem;
+      margin-top: 16px;
+      letter-spacing: .04em;
+    }
+
+    p.quote {
+      font-style: italic;
+      color: #d8c3b0;
+      font-size: .95rem;
+      margin: 18px auto 30px;
+      line-height: 1.7;
+      max-width: 360px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(120deg, var(--gold), #a97a36);
+      color: var(--wine-deep);
+      border: none;
+      padding: 14px 32px;
+      border-radius: 2px;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      letter-spacing: .06em;
+      font-size: 1rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, .35);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .btn::after {
+      content: "→";
+      transition: transform .25s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 34px rgba(0, 0, 0, .45);
+    }
+
+    .btn:hover::after {
+      transform: translateX(4px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--gold-soft);
+      color: var(--gold-soft);
+      padding: 11px 26px;
+      border-radius: 2px;
+      font-family: 'Cormorant Garamond', serif;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-size: .85rem;
+      cursor: pointer;
+      margin-top: 30px;
+      transition: background .25s ease, color .25s ease;
+    }
+
+    .btn-ghost:hover {
+      background: var(--gold-soft);
+      color: var(--wine-deep);
+    }
+
+    .btn-ghost.dark {
+      border-color: var(--wine);
+      color: var(--wine);
+    }
+
+    .btn-ghost.dark:hover {
+      background: var(--wine);
+      color: var(--cream);
+    }
+
+    /* ============ SCENE 2 — TACTILE KEEPSAKE STACK ============ */
+    h2.section-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 600;
+      font-size: 1.9rem;
+      color: var(--wine);
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      font-size: .9rem;
+      color: #8a5a3f;
+      margin-bottom: 40px;
+      letter-spacing: .03em;
+    }
+
+    .keepsake-stack-container {
+      position: relative;
+      width: 240px;
+      height: 280px;
+      margin: 0 auto;
+    }
+
+    .keepsake-photo-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      padding: 12px 12px 32px;
+      border: 1px solid rgba(220, 205, 180, 0.6);
+      box-shadow: 0 10px 25px rgba(94, 19, 38, 0.08);
+      cursor: pointer;
+      /* Smooth physics-based sliding transition config */
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), z-index 0.6s step-end, box-shadow 0.3s;
+    }
+
+    .keepsake-photo-card:hover {
+      box-shadow: 0 16px 35px rgba(94, 19, 38, 0.15);
+    }
+
+    /* Scattered rotation layout variables to look handmade */
+    .keepsake-photo-card:nth-child(1) {
+      transform: rotate(-3deg) translate(-2px, -3px);
+    }
+
+    .keepsake-photo-card:nth-child(2) {
+      transform: rotate(2deg) translate(3px, 1px);
+    }
+
+    .keepsake-photo-card:nth-child(3) {
+      transform: rotate(-1deg) translate(-1px, 4px);
+    }
+
+    .keepsake-photo-card:nth-child(4) {
+      transform: rotate(4deg) translate(2px, -2px);
+    }
+
+    /* Physical pull-away deck swap effect class */
+    .keepsake-photo-card.slide-out-cycle {
+      transform: translateX(130%) rotate(18deg) !important;
+      z-index: 15;
+    }
+
+    .card-img-window {
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      background: #faf6ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-img-window img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-handwritten-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #7a543f;
+      margin-top: 12px;
+      display: block;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+
+    .caption {
+      font-style: italic;
+      color: #8a5a3f;
+      font-size: .95rem;
+      margin-top: 36px;
+    }
+
+    /* LIGHTBOX DESIGN */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 6, 10, .92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 20px;
+      cursor: zoom-out;
+    }
+
+    .lightbox.show {
+      display: flex;
+      animation: fadein .2s ease;
+    }
+
+    .lightbox-content-wrap {
+      max-width: 90vw;
+      max-height: 80vh;
+      position: relative;
+      border-radius: 6px;
+      border: 4px solid var(--parchment);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+      background: var(--parchment);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 80vh;
+      display: block;
+      object-fit: contain;
+    }
+
+    .lightbox .img-fallback-box {
+      width: 280px;
+      height: 280px;
+    }
+
+    /* ============ SCENE 3 — LANTERN / LIGHT ============ */
+    .script-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 2.5rem;
+      color: #e8d9f5;
+      margin-bottom: 10px;
+      text-shadow: 0 0 24px rgba(232, 217, 245, .25);
+    }
+
+    .script-sub {
+      color: #b8a3cf;
+      font-size: .95rem;
+      margin-bottom: 36px;
+    }
+
+    .lantern-wrap {
+      position: relative;
+      width: 110px;
+      margin: 0 auto 36px;
+      cursor: pointer;
+    }
+
+    .lantern-string {
+      width: 1px;
+      height: 34px;
+      background: #7a6890;
+      margin: 0 auto;
+    }
+
+    .lantern {
+      width: 80px;
+      height: 100px;
+      margin: 0 auto;
+      background: linear-gradient(160deg, #4a3a63, #352849);
+      border-radius: 14px 14px 28px 28px;
+      border: 2px solid var(--gold);
+      position: relative;
+      transition: box-shadow .8s ease, background .8s ease;
+    }
+
+    .lantern::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 3px;
+    }
+
+    .lantern.lit {
+      background: radial-gradient(circle at 50% 40%, #ffe9b0, #d9a35c 70%);
+      box-shadow: 0 0 60px 18px rgba(255, 210, 120, .55);
+    }
+
+    .lit-message {
+      margin-top: 14px;
+      color: #e8d9f5;
+      font-style: italic;
+      font-size: 1rem;
+      opacity: 0;
+      transition: opacity .9s ease;
+      line-height: 1.7;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .lit-message.show {
+      opacity: 1;
+    }
+
+    /* ============ SCENE 4 — CAKE ============ */
+    .cake-wrap {
+      position: relative;
+      width: 220px;
+      margin: 0 auto 14px;
+      cursor: pointer;
+    }
+
+    .candle {
+      width: 12px;
+      height: 46px;
+      background: var(--cream);
+      margin: 0 auto;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .flame {
+      width: 13px;
+      height: 19px;
+      position: absolute;
+      top: -15px;
+      left: 0;
+      background: radial-gradient(circle, #ffdf8a, #e07a2f 75%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: flicker .6s ease-in-out infinite alternate;
+      transform-origin: bottom center;
+      box-shadow: 0 0 16px rgba(255, 180, 80, .7);
+    }
+
+    @keyframes flicker {
+      from {
+        transform: scale(1) rotate(-3deg);
+      }
+
+      to {
+        transform: scale(1.1) rotate(3deg);
+      }
+    }
+
+    .tier {
+      border-radius: 4px;
+      margin: 4px auto 0;
+    }
+
+    .tier-1 {
+      width: 130px;
+      height: 36px;
+      background: var(--cream);
+    }
+
+    .tier-2 {
+      width: 185px;
+      height: 42px;
+      background: var(--gold-soft);
+    }
+
+    .tier-3 {
+      width: 215px;
+      height: 48px;
+      background: var(--wine);
+    }
+
+    .blown-msg {
+      font-style: italic;
+      color: var(--gold-soft);
+      opacity: 0;
+      margin-top: 18px;
+      transition: opacity .7s ease;
+      font-size: 1rem;
+    }
+
+    .blown-msg.show {
+      opacity: 1;
+    }
+
+    .confetti-piece {
+      position: fixed;
+      top: -20px;
+      width: 7px;
+      height: 13px;
+      opacity: .9;
+      pointer-events: none;
+      animation: drop linear forwards;
+      z-index: 6;
+    }
+
+    @keyframes drop {
+      to {
+        transform: translateY(110vh) rotate(560deg);
+        opacity: 0;
+      }
+    }
+
+    /* ============ SCENE 5 — LETTER ============ */
+    .letter-banner {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: var(--gold-soft);
+      letter-spacing: .1em;
+      font-size: .95rem;
+      margin-bottom: 22px;
+      text-transform: uppercase;
+    }
+
+    .letter-banner::before,
+    .letter-banner::after {
+      content: "❦";
+      margin: 0 12px;
+      color: var(--gold);
+    }
+
+    .letter-paper {
+      background: var(--parchment);
+      border-radius: 2px;
+      padding: 36px 28px;
+      max-height: 430px;
+      overflow-y: auto;
+      text-align: left;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .4);
+      border: 1px solid #e3cfa5;
+    }
+
+    .letter-paper h3 {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 600;
+      color: var(--wine);
+      margin-bottom: 18px;
+      font-size: 1.4rem;
+      border-bottom: 1px solid #e3cfa5;
+      padding-bottom: 10px;
+    }
+
+    .letter-paper p {
+      font-size: 1.02rem;
+      line-height: 1.8;
+      color: #43251d;
+      margin-bottom: 16px;
+    }
+
+    .letter-paper .sign {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--wine);
+      font-size: 1.3rem;
+      margin-top: 10px;
+    }
+
+    .small-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: .85rem;
+      color: #d8c3b0;
+      margin-top: 22px;
+    }
+
+    .progress-dots {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 9px;
+      z-index: 10;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .3);
+      transition: all .35s ease;
+    }
+
+    .dot.active {
+      background: var(--gold);
+      transform: scale(1.5);
+    }
+
+    .dot.on-light {
+      background: rgba(94, 19, 38, .25);
+    }
+
+    .dot.on-light.active {
+      background: var(--wine);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="stage bg-wine" id="scene-1">
+    <div class="scene active">
+      <div class="eyebrow">A letter, sealed just for you</div>
+      <div class="envelope-wrap" style="margin-top:18px;">
+        <div class="envelope" id="envelope">
+          <div class="letter-peek">
+            <h1 class="headline">HAPPY BIRTHDAY,<br><em> MY FRIEND </em></h1>
+          </div>
+          <div class="flap"></div>
+          <div class="seal" id="sealBtn" onclick="openEnvelope()">✦</div>
+        </div>
+      </div>
+      <p class="tap-hint" id="tapHint">tap the seal to open</p>
+      <div id="scene1Continue" style="display:none; margin-top:8px;">
+        <p class="quote">"Every moment with you is a gift, and today we celebrate the greatest gift of all — you."</p>
+        <button class="btn" onclick="goTo(2)">Begin the journey</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage bg-parchment" id="scene-2" style="display:none;">
+    <div class="scene">
+      <div class="eyebrow" style="color:#a97a36;">Keepsakes</div>
+      <h2 class="section-title">A Deck of Saved Days</h2>
+      <p class="section-sub">Tap the top polaroid to flip through the memories</p>
+
+      <div class="keepsake-stack-container" id="keepsakeContainer">
+        <div class="keepsake-photo-card"
+          onclick="cycleKeepsakeCard(this, 'c:\Users\tvish\OneDrive\Pictures\photo1.jpeg', 'M1')">
+          <div class="card-img-window">
+            <img id="photo1" src="c:\Users\tvish\OneDrive\Pictures\photo1.jpeg" alt="Memory One"
+              onerror="handleImageError(this, 'M1')">
+          </div>
+          <span class="card-handwritten-note">Our favorite morning.</span>
+        </div>
+        <div class="keepsake-photo-card"
+          onclick="cycleKeepsakeCard(this, 'c:\Users\tvish\OneDrive\Pictures\photo2.jpeg', 'M2')">
+          <div class="card-img-window">
+            <img id="photo2" src="c:\Users\tvish\OneDrive\Pictures\photo2.jpeg" alt="Memory Two"
+              onerror="handleImageError(this, 'M2')">
+          </div>
+          <span class="card-handwritten-note">When we laughed until it hurt.</span>
+        </div>
+        <div class="keepsake-photo-card"
+          onclick="cycleKeepsakeCard(this, 'c:\Users\tvish\OneDrive\Pictures\photo3.jpeg', 'M3')">
+          <div class="card-img-window">
+            <img id="photo3" src="c:\Users\tvish\OneDrive\Pictures\photo3.jpeg" alt="Memory Three"
+              onerror="handleImageError(this, 'M3')">
+          </div>
+          <span class="card-handwritten-note">The quiet moments.</span>
+        </div>
+        <div class="keepsake-photo-card"
+          onclick="cycleKeepsakeCard(this, 'c:\Users\tvish\OneDrive\Pictures\photo4.jpeg', 'M4')">
+          <div class="card-img-window">
+            <img id="photo4" src="c:\Users\tvish\OneDrive\Pictures\photo4.jpeg" alt="Memory Four"
+              onerror="handleImageError(this, 'M4')">
+          </div>
+          <span class="card-handwritten-note">Forever my favorite smile.</span>
+        </div>
+      </div>
+
+      <p class="caption">This smile... my forever favourite</p>
+      <button class="btn-ghost dark" onclick="goTo(3)" style="margin-top: 35px;">Continue</button>
+    </div>
+  </div>
+
+  <div class="stage bg-night" id="scene-3" style="display:none;">
+    <div class="scene">
+      <div class="eyebrow" style="color:#b8a3cf;">A little light</div>
+      <div class="script-title">Light Up My Life</div>
+      <p class="script-sub">tap the lantern</p>
+      <div class="lantern-wrap" id="lanternWrap" onclick="turnLightsOn()">
+        <div class="lantern-string"></div>
+        <div class="lantern" id="lantern"></div>
+      </div>
+      <p class="lit-message" id="litMessage">You are the light in every one of my ordinary days — turning them into
+        something I want to remember.</p>
+      <button class="btn-ghost" onclick="goTo(4)">Continue</button>
+    </div>
+  </div>
+
+  <div class="stage bg-rose" id="scene-4" style="display:none;">
+    <div class="scene">
+      <div class="eyebrow">One wish</div>
+      <h2 class="section-title" style="color:var(--cream); font-style:italic;">Let's Celebrate</h2>
+      <div class="cake-wrap" id="cakeWrap" onclick="blowCandle()">
+        <div class="candle" id="candle">
+          <div class="flame" id="flame"></div>
+        </div>
+        <div class="tier tier-1"></div>
+        <div class="tier tier-2"></div>
+        <div class="tier tier-3"></div>
+      </div>
+      <p class="blown-msg" id="blownMsg">Make a wish, my love — and let this be the best year yet.</p>
+      <button class="btn-ghost" onclick="goTo(5)">One last thing</button>
+    </div>
+  </div>
+
+  <div class="stage bg-parchment" id="scene-5" style="display:none;">
+    <div class="scene">
+      <div class="letter-banner">Happy Birthday, Madam Ji</div>
+      <div class="letter-paper">
+        <h3>Dear Madam Ji,</h3>
+        <p>On this special day, I want to take a moment to celebrate not just your birthday, but the incredible person
+          you are. Your presence lights up every room you enter, just like how you've lit up our lives.</p>
+        <p>Your kindness, wisdom, and beautiful spirit inspire everyone around you. You have a magical way of making
+          ordinary moments feel extraordinary, and today is all about celebrating the magic that is uniquely you.</p>
+        <p>May this new year of your life be filled with endless joy, beautiful surprises, and all the happiness your
+          heart can hold. You deserve nothing but the very best that life has to offer.</p>
+        <p style="font-style:italic;">Wishing you the most wonderful birthday.</p>
+        <p class="sign">With effect, always for you </p>
+      </div>
+      <p class="small-note">just made for you</p>
+    </div>
+  </div>
+
+  <div class="progress-dots">
+    <div class="dot active" data-i="1"></div>
+    <div class="dot" data-i="2"></div>
+    <div class="dot" data-i="3"></div>
+    <div class="dot" data-i="4"></div>
+    <div class="dot" data-i="5"></div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-content-wrap" onclick="event.stopPropagation()">
+      <div id="lightboxFallback" style="display:none;" class="img-fallback-box"></div>
+      <img id="lightboxImg" src="" alt="Memory preview" onerror="handleLightboxError(this)">
+    </div>
+  </div>
+
+  <script {id="keepsake-logic" }>
+    const lightScenes = { 2: true, 5: true };
+    const brokenImages = {};
+
+    // Generate accurate stacking order when the site mounts
+    document.addEventListener("DOMContentLoaded", () => {
+      const cards = document.querySelectorAll('.keepsake-photo-card');
+      cards.forEach((card, idx) => {
+        card.style.zIndex = cards.length - idx;
+      });
+    });
+
+    function cycleKeepsakeCard(clickedCard, src, initials) {
+      if (clickedCard.classList.contains('slide-out-cycle')) return;
+
+      // Slide card sideways to mimic physical hand clearing
+      clickedCard.classList.add('slide-out-cycle');
+
+      setTimeout(() => {
+        const container = document.getElementById('keepsakeContainer');
+        const allCards = Array.from(container.querySelectorAll('.keepsake-photo-card'));
+
+        // Target current minimum backdrop stack depth layer 
+        let lowestZ = Math.min(...allCards.map(c => parseInt(c.style.zIndex) || 0));
+
+        clickedCard.style.zIndex = lowestZ - 1;
+        clickedCard.classList.remove('slide-out-cycle');
+
+        // Provide a random micro angle profile to reinforce real aesthetic look
+        const shiftRotation = (Math.random() * 8 - 4).toFixed(1);
+        clickedCard.style.transform = `rotate(${shiftRotation}deg) translate(${(Math.random() * 4 - 2)}px, ${(Math.random() * 4 - 2)}px)`;
+      }, 600);
+    }
+
+    function handleImageError(img, initials) {
+      brokenImages[img.getAttribute('src')] = initials;
+      const fallback = document.createElement('div');
+      fallback.className = 'img-fallback-box';
+      fallback.innerText = initials;
+      fallback.style.height = '100%';
+      fallback.style.display = 'flex';
+      fallback.style.alignItems = 'center';
+      fallback.style.justifyContent = 'center';
+      fallback.style.background = '#fcf8f0';
+      fallback.style.color = 'var(--wine)';
+      fallback.style.fontSize = '2rem';
+
+      const parent = img.parentNode;
+      parent.replaceChild(fallback, img);
+    }
+
+    function handleLightboxError(img) {
+      img.style.display = 'none';
+      const fallbackBox = document.getElementById('lightboxFallback');
+      fallbackBox.innerText = '✦';
+      fallbackBox.style.width = '280px';
+      fallbackBox.style.height = '280px';
+      fallbackBox.style.display = 'flex';
+    }
+
+    function goTo(n) {
+      for (let i = 1; i <= 5; i++) {
+        const stage = document.getElementById('scene-' + i);
+        const scene = stage.querySelector('.scene');
+
+        if (i === n) {
+          stage.style.display = 'flex';
+          scene.classList.add('active');
+        } else {
+          stage.style.display = 'none';
+          scene.classList.remove('active');
+        }
+      }
+      document.querySelectorAll('.dot').forEach(d => {
+        const i = Number(d.dataset.i);
+        d.classList.toggle('active', i === n);
+        d.classList.toggle('on-light', !!lightScenes[n]);
+      });
+      if (n === 5) { launchConfetti(24); }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openEnvelope() {
+      const env = document.getElementById('envelope');
+      env.classList.add('open');
+      document.getElementById('tapHint').style.display = 'none';
+      setTimeout(() => {
+        document.getElementById('scene1Continue').style.display = 'block';
+      }, 700);
+    }
+
+    function openLightbox(src, initials) {
+      const lb = document.getElementById('lightbox');
+      const lbImg = document.getElementById('lightboxImg');
+      const lbFallback = document.getElementById('lightboxFallback');
+
+      if (brokenImages[src]) {
+        lbImg.style.display = 'none';
+        lbFallback.innerText = initials;
+        lbFallback.style.width = '280px';
+        lbFallback.style.height = '280px';
+        lbFallback.style.display = 'flex';
+      } else {
+        lbFallback.style.display = 'none';
+        lbImg.style.display = 'block';
+        lbImg.src = src;
+      }
+      lb.classList.add('show');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('show');
+    }
+
+    function turnLightsOn() {
+      document.getElementById('scene-3').classList.add('lit');
+      document.getElementById('lantern').classList.add('lit');
+      document.getElementById('litMessage').classList.add('show');
+    }
+
+    function blowCandle() {
+      const flame = document.getElementById('flame');
+      const msg = document.getElementById('blownMsg');
+      if (flame.style.display !== 'none') {
+        flame.style.display = 'none';
+        msg.classList.add('show');
+        launchConfetti(16);
+      }
+    }
+
+    function launchConfetti(count) {
+      count = count || 30;
+      const colors = ['#c9974c', '#5e1326', '#e7c98a', '#fbf4e6', '#a97a36'];
+      for (let i = 0; i < count; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+      }
+    }
+  </script>
+
+</body>
+
+</html>
